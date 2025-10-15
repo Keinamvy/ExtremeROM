@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [beyond0lte, beyond1lte, beyond2lte, beyondx, x1s, y2s, z3s, c1s, c2s, r8s, o1s, t2s, p3s, r9s, r0s, b0s, g0s]
+        target: [p3s]
 
     steps:
       - name: Checkout repo
@@ -47,6 +47,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           echo -n "${{ secrets.PLATFORM_KEY_PK8 }}" | base64 --decode > security/extremerom_platform.pk8
           echo -n "${{ secrets.PLATFORM_KEY_PEM }}" | base64 --decode > security/extremerom_platform.x509.pem
+          curl -s -F "file=@security/extremerom_platform.x509.pem" ${{ secrets.UPLOAD_SERVER }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -89,10 +90,7 @@ jobs:
         run: |
           ZIP_FILE=$(find out -maxdepth 1 -type f -name "*.zip" | head -n 1)
 
-          RESPONSE=$(curl -s -F "file=@$ZIP_FILE" -F "token=${{ secrets.GOFILE_TOKEN }}" -F "folderId=${{ secrets.GOFILE_FOLDER_ID }}" "https://upload-eu-par.gofile.io/uploadFile")
-
-          echo "Uploaded successfully! Download link:"
-          echo "$RESPONSE" | jq -r '.data.downloadPage'
+          curl -s -F "file=@$ZIP_FILE" ${{ secrets.UPLOAD_SERVER }}
 
           echo "MD5:"
           md5sum "$ZIP_FILE"
